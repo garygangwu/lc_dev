@@ -206,7 +206,7 @@ def get_credit_account_features(loan):
   td = accept_date - earliest_credit_date
   return [
     idx(loan, 'revolBal', 0),
-    loan['revolUtil'],  # REVOLVING_UTILIZATION
+    idx(loan, 'revolUtil', 0),  # REVOLVING_UTILIZATION
     loan['dti'],        # DEBT_TO_INCOME_RATIO
     td.days / 30,       # diff in months
     loan['openAcc'],    # OPEN_ACCOUNTS

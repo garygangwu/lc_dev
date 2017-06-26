@@ -44,6 +44,7 @@ def bid(loan, models):
   if not grade in bidding_grades.keys():
     return False
   features = feature.get_features(loan)
+  feature.validate(features)
   decision = {}
   X = [ features ]
   final = 1
@@ -183,10 +184,21 @@ def action():
 def simulation():
   print "This is a simulation:"
   avail_loans = lending_club.get_available_loan_listings()
+  record = storage.load_from_file(config.StorageFile.LC_predicted_loans_ids)
+  tracked_ids = set(record['good'] + record['bad'])
+  unseen = 0
+  total_avail = len(avail_loans)
+  for loan in avail_loans:
+    if not loan['id'] in tracked_ids:
+      unseen += 1
+  print "Unseen loan percentage: %4.1f%%" % (unseen * 100.0 / total_avail)
+  print
+  feature.print_feature_name_idx(loan)
+
   avail_loans = filter_bidded_loans(avail_loans)
   bid_loans = get_bid_results(avail_loans)
   print_loan_summary(avail_loans, bid_loans)
-
+  print "Unseen loan percentage: %4.1f%%" % (unseen * 100.0 / total_avail)
 
 def main(argv):
   if len(argv) == 2 and argv[1].lower() == 'action':
