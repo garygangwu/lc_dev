@@ -2,6 +2,7 @@ import requests
 import scraper
 import config
 import json
+import time
 
 def get_web_login_session(
       email = config.get_login_email(),
@@ -52,11 +53,23 @@ def get_purchased_notes_detail_statuses():
 def get_purchased_loan_listings_in_html(loan_ids, session):
   url = 'https://www.lendingclub.com/browse/loanDetail.action?loan_id='
   htmls = []
+  max_retries = 3
 
   for loan_id in loan_ids:
-    response = session.get(url + str(loan_id))
-    print "fetching loan html with id = %d" % loan_id
-    if response.status_code != 200:
+    retry = 0
+    while retry <= max_retries:
+      response = None
+      try:
+        print "fetching loan html with id = %d" % loan_id
+        response = session.get(url + str(loan_id), timeout=5)
+        break
+      except requests.exceptions.ConnectionError as e:
+        print "----  Connection Timeout: " + str(e)
+      except requests.exceptions.ReadTimeout as e:
+        print "---- Read Timeout: " + str(e)
+      retry += 1
+      time.sleep(5)
+    if response is None or response.status_code != 200 or retry >= max_retries:
       raise Exception('access denied')
     htmls.append(response.text)
 
