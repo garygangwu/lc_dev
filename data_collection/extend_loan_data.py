@@ -34,7 +34,7 @@ def main(argv):
       loans[i]['numInvestors'] = web_loan['numInvestors']
       loans[i]['loanStatus'] = web_loan['loanStatus']
       c += 1
-    if c >= 100:
+    if c >= 50:
       c = 0
       now = datetime.now()
       storage.save_to_file(loans, filename)
