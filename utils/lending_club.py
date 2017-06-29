@@ -154,11 +154,8 @@ def get_owned_portfolios():
     "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36",
     "Authorization": config.get_api_token()
   }
-  payload = {
-    "showAll" : "true"
-  }
 
-  response = requests.get(url, headers=headers, params=payload)
+  response = requests.get(url, headers=headers)
   if response.status_code != 200:
     raise Exception('API request failed')
 
@@ -183,6 +180,7 @@ def get_account_summary():
 def get_available_cash():
   account  = get_account_summary()
   return account['availableCash']
+
 
 def submit_order(loans, purchase_unit):
   url = "https://api.lendingclub.com/api/investor/v1/accounts/%d/orders" % config.get_account_id()

@@ -6,14 +6,6 @@ sys.path.append(script_path + "/..")
 from utils import *
 from feature_processing import feature
 
-from sklearn import svm
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import cross_val_score
-from sklearn.ensemble import AdaBoostClassifier
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.ensemble import ExtraTreesClassifier
-from sklearn.externals import joblib
-
 from collections import defaultdict
 import random
 
@@ -22,45 +14,12 @@ bidding_grades = {
   'B' : 1,
   'C' : 1,
   'D' : 1,
-  'E' : 1
+  'E' : 1,
+  'F' : 1
 }
-purchase_accounts = ['gang', 'yimeng']
-max_spending = 250
+purchase_accounts = ['yimeng', 'gang']
+max_spending = 500
 purchase_unit = 25
-
-def load_models():
-  models = {}
-  for grade in bidding_grades.keys():
-    models[grade] = {}
-    models[grade]['extra_tree'] = joblib.load(config.StorageFile.LC_extra_tree_model + '_grade_' + grade)
-    models[grade]['random_forest'] = joblib.load(config.StorageFile.LC_random_forest_model + '_grade_' + grade)
-    models[grade]['adaptive_boosting'] = joblib.load(config.StorageFile.LC_adaptive_boosting_model + '_grade_' + grade)
-    models[grade]['gradient_boosting'] = joblib.load(config.StorageFile.LC_gradient_boosting_model + '_grade_' + grade)
-  return models
-
-
-def bid(loan, models):
-  grade = loan['grade']
-  if not grade in bidding_grades.keys():
-    return False
-  features = feature.get_features(loan)
-  feature.validate(features)
-  decision = {}
-  X = [ features ]
-  final = 1
-  for k, clf in models[grade].iteritems():
-    result = clf.predict(X)
-    decision[k] = result[0]
-    final = final & result[0]
-  print "%10d: subgrade %s, intRate %4.1f%%, purpose %25s, %d, decision %s" % (
-    loan['id'],
-    loan['subGrade'],
-    loan['intRate'],
-    loan['purpose'],
-    final,
-    str(decision)
-  )
-  return final == 1
 
 
 def filter_bidded_loans(loans):
@@ -77,18 +36,18 @@ def filter_bidded_loans(loans):
 
 
 def get_bid_results(avail_loans):
-  models = load_models()
+  models = predict.load_models(bidding_grades.keys())
   bid_loans = []
   for loan in avail_loans:
-    if bid(loan, models):
+    if predict.ensemble_prediction(loan, models):
       bid_loans.append(loan)
   return bid_loans
 
 
-def get_stats(loans):
+def get_stats(loans, key = 'grade'):
   stats = defaultdict(lambda: 0)
   for loan in loans:
-    stats[loan['grade']] += 1
+    stats[loan[key]] += 1
   return stats
 
 
@@ -104,9 +63,9 @@ def prepare_loans_for_purchase(loans):
   return loans_for_purchase
 
 
-def print_loan_summary(avail_loans, bid_loans):
-  orig_stats = get_stats(avail_loans)
-  bid_stats = get_stats(bid_loans)
+def print_loan_summary(avail_loans, bid_loans, key = 'grade'):
+  orig_stats = get_stats(avail_loans, key)
+  bid_stats = get_stats(bid_loans, key)
   print "summary:"
   print orig_stats
   print bid_stats
@@ -122,16 +81,18 @@ def purchase_loans(loans):
     if available_cash < purchase_unit:
       continue
     used_cash = 0
-    while used_cash < available_cash:
+    while used_cash + purchase_unit < available_cash:
       for grade, num in bidding_grades.iteritems():
         for i in xrange(num):
+          if len(loans_for_purchase[grade]) == 0:
+            continue
           loan = loans_for_purchase[grade].pop()
           loans_to_submit.append(loan)
           submited_loans.append(loan)
           used_cash += purchase_unit
-          if used_cash >= available_cash:
+          if used_cash + purchase_unit >= available_cash:
             break
-        if used_cash >= available_cash:
+        if used_cash + purchase_unit >= available_cash:
           break
     result = lending_club.submit_order(loans_to_submit, purchase_unit)
   save_submited_loans_to_files(submited_loans)

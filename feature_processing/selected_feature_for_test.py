@@ -84,15 +84,15 @@ def main():
     feature.validate(features)
 
     if target == 1:
-      if grade == 'A' and random.random() >= 0.01:
+      if grade == 'A' and random.random() >= 0.02:
         continue
-      if grade == 'B' and random.random() >= 0.02:
+      if grade == 'B' and random.random() >= 0.04:
         continue
-      if grade == 'C' and random.random() >= 0.04:
+      if grade == 'C' and random.random() >= 0.05:
         continue
-      if grade == 'D' and random.random() >= 0.06:
+      if grade == 'D' and random.random() >= 0.1:
         continue
-      if grade == 'E' and random.random() >= 0.08:
+      if grade == 'E' and random.random() >= 0.1:
         continue
 
     lc_super_data[grade]['testing']['data'].append(features)
