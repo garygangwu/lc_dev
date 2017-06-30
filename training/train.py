@@ -5,6 +5,7 @@ sys.path.append(script_path + "/..")
 
 from utils import storage
 from utils import config
+from utils import predict
 
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
@@ -17,7 +18,7 @@ from sklearn.externals import joblib
 class GlobalV:
   benchmark = 1
 
-def print_training_data_stats(lc_data):
+def init_training_data_stats(lc_data):
   tot = sum(lc_data['training']['targets'])
   num = len(lc_data['training']['targets'])
   print 'training targets: %d positve, %d negative' % (tot, num - tot)
@@ -63,78 +64,110 @@ def print_predict_results(predict_targets, lc_data, algo_name):
   #  (len(wrong_predictions) - sum(wrong_predictions), sum(wrong_predictions))
 
 
+def fit_and_predict(lc_data, filename_suffix = ''):
+  models = {}
+  predict_targets = {}
+  X, Y = lc_data['training']['data'], lc_data['training']['targets']
+  X_test, Y_test = lc_data['testing']['data'], lc_data['testing']['targets']
 
-def main(argv):
+  models['extra_tree'] = ExtraTreesClassifier(n_estimators=10, max_depth=None, min_samples_split=2, random_state=0)
+  models['extra_tree'].fit(X, Y)
+  predict_targets['extra_tree'] = models['extra_tree'].predict(X_test)
+  joblib.dump(models['extra_tree'], config.StorageFile.LC_extra_tree_model + filename_suffix)
+
+  models['random_forest'] = RandomForestClassifier(n_estimators=10, verbose=False)
+  models['random_forest'].fit(X, Y)
+  predict_targets['random_forest'] = models['random_forest'].predict(X_test)
+  joblib.dump(models['random_forest'], config.StorageFile.LC_random_forest_model + filename_suffix)
+
+  models['adaptive_boosting'] = AdaBoostClassifier(n_estimators=100)
+  scores = cross_val_score(models['adaptive_boosting'], X, Y)
+  models['adaptive_boosting'].fit(X, Y)
+  predict_targets['adaptive_boosting'] = models['adaptive_boosting'].predict(X_test)
+  joblib.dump(models['adaptive_boosting'], config.StorageFile.LC_adaptive_boosting_model + filename_suffix)
+
+  models['gradient_boosting'] = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0)
+  models['gradient_boosting'].fit(X, Y)
+  predict_targets['gradient_boosting'] = models['gradient_boosting'].predict(X_test)
+  joblib.dump(models['gradient_boosting'], config.StorageFile.LC_gradient_boosting_model + filename_suffix)
+
+  generate_prediction_results(models, lc_data)
+
+
+def generate_prediction_results(models, lc_data):
+  init_training_data_stats(lc_data)
+  X_test = lc_data['testing']['data']
+  predict_targets = {}
+  predict_targets['extra_tree'] = models['extra_tree'].predict(X_test)
+  print_predict_results(predict_targets['extra_tree'], lc_data, 'extra_tree')
+  predict_targets['random_forest'] = models['random_forest'].predict(X_test)
+  print_predict_results(predict_targets['random_forest'], lc_data, 'Random Forest')
+  predict_targets['adaptive_boosting'] = models['adaptive_boosting'].predict(X_test)
+  print_predict_results(predict_targets['adaptive_boosting'], lc_data, 'Adaptive boosting')
+  predict_targets['gradient_boosting'] = models['gradient_boosting'].predict(X_test)
+  print_predict_results(predict_targets['gradient_boosting'], lc_data, 'Gradient Boosting')
+
+  predict_targets['combine_all'] = []
+  for i in xrange(len(predict_targets['gradient_boosting'])):
+    predict_targets['combine_all'].append(
+      predict_targets['extra_tree'][i] &
+      predict_targets['random_forest'][i] &
+      predict_targets['adaptive_boosting'][i] &
+      predict_targets['gradient_boosting'][i]
+    )
+  print_predict_results(predict_targets['combine_all'], lc_data, 'combined all')
+
+  predict_targets['combine_top_3'] = []
+  for i in xrange(len(predict_targets['gradient_boosting'])):
+    predict_targets['combine_top_3'].append(
+      predict_targets['random_forest'][i] &
+      predict_targets['adaptive_boosting'][i] &
+      predict_targets['gradient_boosting'][i]
+    )
+  print_predict_results(predict_targets['combine_top_3'], lc_data, 'combined top 3')
+
+
+def evaluate_batch_model_per_grade(lc_super_data):
+  models = predict.load_models()
+  for grade, lc_data in lc_super_data.iteritems():
+    print
+    print "Grade %s" % grade
+    generate_prediction_results(models, lc_data)
+
+
+def batch_train():
+  lc_super_data = storage.load_from_file(config.StorageFile.model_training_file)
+  merged_lc_data = {
+    'training': { 'data': [], 'targets': [] },
+    'testing' : { 'data': [], 'targets': [] }
+  }
+  for grade, lc_data in lc_super_data.iteritems():
+    merged_lc_data['training']['data'] += lc_data['training']['data']
+    merged_lc_data['training']['targets'] += lc_data['training']['targets']
+    merged_lc_data['testing']['data'] += lc_data['testing']['data']
+    merged_lc_data['testing']['targets'] += lc_data['testing']['targets']
+  init_training_data_stats(merged_lc_data)
+  fit_and_predict(merged_lc_data)
+  evaluate_batch_model_per_grade(lc_super_data)
+
+
+def train_per_grade():
   lc_super_data = storage.load_from_file(config.StorageFile.model_training_file)
   for grade, lc_data in lc_super_data.iteritems():
     print
     print "Grade %s" % grade
-    print_training_data_stats(lc_data)
-    X, Y = lc_data['training']['data'], lc_data['training']['targets']
-    X_test = lc_data['testing']['data']
-    Y_test = lc_data['testing']['targets']
+    init_training_data_stats(lc_data)
+    predict_targets = fit_and_predict(lc_data, '_grade_' + grade)
 
-    #clf = svm.SVC(gamma=0.001, C=100., verbose=True)
-    #clf.fit(X, Y)
-    #predict_targets = clf.predict(X_test)
-    #print_predict_results(predict_targets, lc_data, 'SVC standard')
 
-    #clf = svm.SVC()
-    #clf.set_params(kernel='linear').fit(X, y)
-    #predict_targets = clf.predict(X_test)
-    #print_predict_results(predict_targets, lc_data, 'SVC linear')
+def main(argv):
+  if len(argv) <= 1:
+    argv.append('default')
 
-    # clf_svm = svm.SVC()
-    # clf_svm.set_params(kernel='rbf').fit(X, Y)
-    # predict_targets_svm = clf_svm.predict(X_test)
-    # print_predict_results(predict_targets_svm, lc_data, 'SVC rbf')
-
-    clf_extra_tree = ExtraTreesClassifier(n_estimators=10, max_depth=None, min_samples_split=2, random_state=0)
-    clf_extra_tree.fit(X, Y)
-    predict_targets_extra_tree = clf_extra_tree.predict(X_test)
-    print_predict_results(predict_targets_extra_tree, lc_data, 'extra_tree')
-    joblib.dump(clf_extra_tree, config.StorageFile.LC_extra_tree_model + '_grade_' + grade)
-
-    clf_forest = RandomForestClassifier(n_estimators=10, verbose=False)
-    clf_forest.fit(X, Y)
-    predict_targets_forest = clf_forest.predict(X_test)
-    print_predict_results(predict_targets_forest, lc_data, 'Random Forest')
-    joblib.dump(clf_forest, config.StorageFile.LC_random_forest_model + '_grade_' + grade)
-
-    clf_adaptive = AdaBoostClassifier(n_estimators=100)
-    scores = cross_val_score(clf_adaptive, X, Y)
-    #print scores.mean()
-    clf_adaptive.fit(X, Y)
-    predict_targets_adaptive = clf_adaptive.predict(X_test)
-    print_predict_results(predict_targets_adaptive, lc_data, 'AdaBoost')
-    joblib.dump(clf_adaptive, config.StorageFile.LC_adaptive_boosting_model + '_grade_' + grade)
-
-    clf_gradient = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0)
-    clf_gradient.fit(X, Y)
-    predict_targets_gradient = clf_gradient.predict(X_test)
-    print_predict_results(predict_targets_gradient, lc_data, 'Gradient Boosting')
-    #print clf_gradient.score(X, Y)
-    #print clf_gradient.score(X_test, Y_test)
-    joblib.dump(clf_gradient, config.StorageFile.LC_gradient_boosting_model + '_grade_' + grade)
-
-    predict_targets_combined = []
-    for i in xrange(len(predict_targets_gradient)):
-      predict_targets_combined.append(
-        predict_targets_forest[i] &
-        predict_targets_adaptive[i] &
-        predict_targets_gradient[i] &
-        predict_targets_extra_tree[i]
-      )
-    print_predict_results(predict_targets_combined, lc_data, 'combined all')
-
-    predict_targets_combined_2 = []
-    for i in xrange(len(predict_targets_gradient)):
-      predict_targets_combined_2.append(
-        predict_targets_forest[i] &
-        predict_targets_adaptive[i] &
-        predict_targets_gradient[i]
-      )
-    print_predict_results(predict_targets_combined_2, lc_data, 'combined top 3')
+  if argv[1] == 'default':
+    train_per_grade()
+  elif argv[1] == 'batch':
+    batch_train()
 
 if __name__ == "__main__":
   main(sys.argv)

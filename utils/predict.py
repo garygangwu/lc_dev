@@ -10,7 +10,16 @@ from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.externals import joblib
 
 
-def load_models(grades_for_prediction):
+def load_models():
+  models = {}
+  models['extra_tree'] = joblib.load(config.StorageFile.LC_extra_tree_model)
+  models['random_forest'] = joblib.load(config.StorageFile.LC_random_forest_model)
+  models['adaptive_boosting'] = joblib.load(config.StorageFile.LC_adaptive_boosting_model)
+  models['gradient_boosting'] = joblib.load(config.StorageFile.LC_gradient_boosting_model)
+  return models
+
+
+def load_models_per_grade(grades_for_prediction):
   models = {}
   for grade in grades_for_prediction:
     models[grade] = {}

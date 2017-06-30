@@ -18,7 +18,7 @@ bidding_grades = {
   'F' : 1
 }
 purchase_accounts = ['yimeng', 'gang']
-max_spending = 500
+max_spending = 250
 purchase_unit = 25
 
 
@@ -36,7 +36,7 @@ def filter_bidded_loans(loans):
 
 
 def get_bid_results(avail_loans):
-  models = predict.load_models(bidding_grades.keys())
+  models = predict.load_models_per_grade(bidding_grades.keys())
   bid_loans = []
   for loan in avail_loans:
     if predict.ensemble_prediction(loan, models):

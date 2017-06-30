@@ -96,7 +96,7 @@ def get_available_loan_listings():
     "showAll" : "true"
   }
 
-  response = requests.get(url, headers=headers, params=payload)
+  response = requests.get(url, headers=headers, params=payload, stream=False)
   if response.status_code != 200:
     raise Exception('API request failed')
 

@@ -26,7 +26,7 @@ def main(argv):
 
   loans = storage.load_from_file(config.StorageFile.LC_LOAN_EXTENDED_DATA)
   lc_puchased_loans = []
-  auto_puchased_loas = []
+  auto_puchased_loans = []
   for loan in loans:
     loan_id = loan['id']
     if lc_puchased_loan_ids.get(loan_id) is not None:
@@ -34,7 +34,7 @@ def main(argv):
       lc_puchased_loans.append(loan)
     elif auto_puchased_loan_ids.get(loan_id) is not None:
       loan['loanStatus'] = auto_puchased_loan_ids[loan_id]
-      auto_puchased_loas.append(loan)
+      auto_puchased_loans.append(loan)
 
   storage.save_to_file(lc_puchased_loans, config.StorageFile.LC_purchased_loans_file)
   print "Saved %d (out of %d) loans to %s" % (
@@ -44,7 +44,7 @@ def main(argv):
   )
   storage.save_to_file(auto_puchased_loas, config.StorageFile.AUTO_purchased_loans_file)
   print "Saved %d (out of %d) loans to %s" % (
-    len(auto_puchased_loas),
+    len(auto_puchased_loans),
     len(auto_puchased_loan_ids),
     config.StorageFile.AUTO_purchased_loans_file
   )
