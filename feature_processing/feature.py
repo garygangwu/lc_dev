@@ -50,6 +50,7 @@ class Conf:
     'loan_purpose': 'get_loan_purpose',
     'home_ownership': 'get_home_ownership',
     'employment_length': 'get_employment_length',
+    'employment_title': 'get_employment_title_features',
     'annual_income': 'get_annual_income',
     'delinquency': 'get_delinquency_features',
     'public_record': 'get_public_record_features',
@@ -64,7 +65,10 @@ class Conf:
     'tl': 'get_tl_features',
     'bc': 'get_bc_features',
     'app_type': 'get_application_type',
-    'rev': 'get_rev_features'
+    'rev': 'get_rev_features',
+#    'location': 'get_location_features',
+    'balance': 'get_bal_features',
+    'tax': 'get_tax_features'
   }
 
 
@@ -87,6 +91,8 @@ def validate(features):
   for feature in features:
     if feature is None:
       raise Exception('bad value at idx: %d' % i)
+    if not isinstance(feature, int) and not isinstance(feature, float):
+      raise Exception('bad value at idx: %d -- value: %s' % (i, str(feature)))
     i += 1
 
 

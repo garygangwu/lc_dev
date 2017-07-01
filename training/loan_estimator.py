@@ -24,7 +24,8 @@ def main(argv):
   good_loans = bidding.get_bid_results(loans)
   bidding.print_loan_summary(loans, good_loans)
   print
-  bidding.print_loan_summary(loans, good_loans, 'loanStatus')
+  if argv[1] != 'auto':
+    bidding.print_loan_summary(loans, good_loans, 'loanStatus')
 
 if __name__ == "__main__":
   main(sys.argv)

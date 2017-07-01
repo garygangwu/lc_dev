@@ -129,7 +129,8 @@ def generate_prediction_results(models, lc_data):
 
 def evaluate_batch_model_per_grade(lc_super_data):
   models = predict.load_models()
-  for grade, lc_data in lc_super_data.iteritems():
+  for grade in sorted(lc_super_data.keys()):
+    lc_data = lc_super_data[grade]
     print
     print "Grade %s" % grade
     generate_prediction_results(models, lc_data)
@@ -153,7 +154,8 @@ def batch_train():
 
 def train_per_grade():
   lc_super_data = storage.load_from_file(config.StorageFile.model_training_file)
-  for grade, lc_data in lc_super_data.iteritems():
+  for grade in sorted(lc_super_data.keys()):
+    lc_data = lc_super_data[grade]
     print
     print "Grade %s" % grade
     init_training_data_stats(lc_data)

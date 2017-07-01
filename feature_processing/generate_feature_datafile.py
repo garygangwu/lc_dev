@@ -90,9 +90,9 @@ def main():
       key = 'testing'
 
     if target == 1:
-      if grade == 'A' and random.random() >= 0.2:
+      if grade == 'A' and random.random() >= 0.301:
         continue
-      if grade == 'B' and random.random() >= 0.6:
+      if grade == 'B' and random.random() >= 0.706:
         continue
     #   if grade == 'C' and random.random() >= 0.35:
     #     continue
