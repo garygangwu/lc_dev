@@ -1,4 +1,5 @@
 from datetime import datetime
+import enchant
 
 class Conf:
   loan_term_feature_map = {
@@ -86,6 +87,23 @@ def print_feature_name_idx(loan):
     idx += len(values)
 
 
+def idx_to_feature_map(loan):
+  feature_map = {}
+  idx = 0
+  for key, method in Conf.feature_method_map.iteritems():
+    values = globals()[method](loan)
+    i = idx
+    while i < idx + len(values):
+      feature_map[i] = {
+        'name': method,
+        'start': idx,
+        'end': idx + len(values) - 1
+      }
+      i += 1
+    idx += len(values)
+  return feature_map
+
+
 def validate(features):
   i = 0
   for feature in features:
@@ -146,15 +164,34 @@ def get_employment_length(loan):
   ]
 
 
+special_chars = set(['\\', '/', '&', '(', ')', '.', '-', ','])
+def clean_up_title(title):
+  ret = ''
+  for i in xrange(len(title)):
+    if title[i] in special_chars:
+      ret += ' '
+    else:
+      ret += (title[i])
+  return ret
+
+
+dict_en = enchant.Dict("en_US")
+valid_words = set(['admin', 'Admin', 'realtor', 'Realtor', 'DevOps', 'Fedex', 'PayPal', 'AutoTech', 'fulltime', 'Fulltime', 'Postdoc'])
 def get_employment_title_features(loan):
   title = loan['empTitle'] or 'n/a'
+  has_misspell_word = 0
   if title == 'n/a':
     with_title = 0
     num_words = 0
   else:
+    title = clean_up_title(title)
     with_title = 1
-    num_words = len(title.split(' '))
-  return [with_title, num_words]
+    words = filter(lambda k: len(k) != 0, title.split(' '))
+    num_words = len(words)
+    for word in words:
+      if len(word) > 4 and not word in valid_words and not dict_en.check(word):
+        has_misspell_word = 1
+  return [with_title, num_words, has_misspell_word]
 
 
 def get_annual_income(loan):

@@ -51,6 +51,17 @@ class StorageFile:
   LC_bidded_loans_file = '/Users/gary_wu/lending_club/data/bidding/bidded_loans.json'
   LC_predicted_loans_ids = '/Users/gary_wu/lending_club/data/bidding/predicted_loans_ids'
 
+  LC_purchased_loans_file = '/Users/gary_wu/lending_club/data/bidding/lc_purchased_loans.json'
+  AUTO_purchased_loans_file = '/Users/gary_wu/lending_club/data/bidding/auto_purchased_loans.json'
+
+
+class StorageProductionFile:
+  LC_random_forest_model = '/Users/gary_wu/lending_club/data/model_production/random_forest_model.pkl'
+  LC_extra_tree_model = '/Users/gary_wu/lending_club/data/model_production/extra_tree_model.pkl'
+  LC_adaptive_boosting_model = '/Users/gary_wu/lending_club/data/model_production/adaptive_boosting_model.pkl'
+  LC_gradient_boosting_model = '/Users/gary_wu/lending_club/data/model_production/gradient_boosting_model.pkl'
+
+
 class LoanStaticData:
   loan_value_to_key_map = {
     'credit card refinancing': 'credit_card',

@@ -5,6 +5,7 @@ sys.path.append(script_path + "/..")
 
 from utils import storage
 from utils import config
+from utils import predict
 
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
@@ -58,15 +59,15 @@ def print_predict_results(predict_targets, lc_data, algo_name):
 def main(argv):
   lc_super_data = storage.load_from_file(config.StorageFile.model_evaluating_file)
 
-  clf = {}
-  for grade in lc_super_data.keys():
-    clf[grade] = {}
-    clf[grade]['extra_tree'] = joblib.load(config.StorageFile.LC_extra_tree_model + '_grade_' + grade)
-    clf[grade]['random_forest'] = joblib.load(config.StorageFile.LC_random_forest_model + '_grade_' + grade)
-    clf[grade]['adaptive_boosting'] = joblib.load(config.StorageFile.LC_adaptive_boosting_model + '_grade_' + grade)
-    clf[grade]['gradient_boosting'] = joblib.load(config.StorageFile.LC_gradient_boosting_model + '_grade_' + grade)
+  if mode == 'batch':
+    clf = {}
+    for grade in lc_super_data.keys():
+      clf[grade] = predict.load_models()
+  else:
+    clf = predict.load_models_per_grade(lc_super_data.keys())
 
-  for grade, lc_data in lc_super_data.iteritems():
+  for grade in sorted(lc_super_data.keys()):
+    lc_data = lc_super_data[grade]
     X_test = lc_data['testing']['data']
     Y_test = lc_data['testing']['targets']
 
@@ -111,4 +112,7 @@ def main(argv):
     print
 
 if __name__ == "__main__":
-  main(sys.argv)
+  mode = ''
+  if len(sys.argv) == 2 and sys.argv[1] == 'batch':
+    mode = 'batch'
+  main(mode)

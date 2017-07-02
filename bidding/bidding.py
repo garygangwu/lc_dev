@@ -8,6 +8,8 @@ from feature_processing import feature
 
 from collections import defaultdict
 import random
+import os
+from datetime import datetime
 
 bidding_grades = {
   'A' : 1,
@@ -36,7 +38,7 @@ def filter_bidded_loans(loans):
 
 
 def get_bid_results(avail_loans):
-  models = predict.load_models_per_grade(bidding_grades.keys())
+  models = predict.load_models_per_grade(bidding_grades.keys(), production=True)
   bid_loans = []
   for loan in avail_loans:
     if predict.ensemble_prediction(loan, models):
@@ -154,18 +156,27 @@ def simulation():
       unseen += 1
   print "Unseen loan percentage: %4.1f%%" % (unseen * 100.0 / total_avail)
   print
-  feature.print_feature_name_idx(loan)
 
   avail_loans = filter_bidded_loans(avail_loans)
   bid_loans = get_bid_results(avail_loans)
   print_loan_summary(avail_loans, bid_loans)
   print "Unseen loan percentage: %4.1f%%" % (unseen * 100.0 / total_avail)
 
+
+def print_model_release_time():
+  filename = config.StorageProductionFile.LC_gradient_boosting_model + '_grade_C'
+  timestamp = os.path.getmtime(filename)
+  d = datetime.fromtimestamp(timestamp)
+  print
+  print "Model release time: %s" % str(d)
+
+
 def main(argv):
   if len(argv) == 2 and argv[1].lower() == 'action':
     action()
   else:
     simulation()
+  print_model_release_time()
 
 if __name__ == "__main__":
   main(sys.argv)

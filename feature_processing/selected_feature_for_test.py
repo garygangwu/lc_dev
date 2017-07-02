@@ -11,7 +11,7 @@ import random
 
 bad_status_list = ['Late (16-30 days)', 'Late (31-120 days)', 'Default', 'Charged Off']
 good_status_list = ['Current', 'Fully Paid']
-valid_grades = ['A', 'B', 'C', 'D', 'E']
+valid_grades = ['A', 'B', 'C', 'D', 'E', 'F']
 valid_status_list = bad_status_list + good_status_list
 
 def need_to_drop(loan):
@@ -30,7 +30,7 @@ def need_to_drop(loan):
   date_str = loan['acceptD'].split('T')[0]
   issue_date = datetime.strptime(date_str, "%Y-%m-%d")
   dt = datetime.now() - issue_date
-  if dt.days < 365 and loan['loanStatus'] == 'Current':
+  if (dt.days < 365 or dt.days >= 365) and loan['loanStatus'] == 'Current':
     return True # skip all fresh loans in the past X days
 
   return False
@@ -84,16 +84,16 @@ def main():
     feature.validate(features)
 
     if target == 1:
-      if grade == 'A' and random.random() >= 0.02:
+      if grade == 'A' and random.random() >= 0.1:
         continue
-      if grade == 'B' and random.random() >= 0.04:
+      if grade == 'B' and random.random() >= 0.2:
         continue
-      if grade == 'C' and random.random() >= 0.05:
-        continue
-      if grade == 'D' and random.random() >= 0.1:
-        continue
-      if grade == 'E' and random.random() >= 0.1:
-        continue
+      # if grade == 'C' and random.random() >= 0.05:
+      #   continue
+      # if grade == 'D' and random.random() >= 0.1:
+      #   continue
+      # if grade == 'E' and random.random() >= 0.1:
+      #   continue
 
     lc_super_data[grade]['testing']['data'].append(features)
     lc_super_data[grade]['testing']['targets'].append(target)

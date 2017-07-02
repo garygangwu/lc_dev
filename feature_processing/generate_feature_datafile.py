@@ -15,7 +15,7 @@ valid_grades = ['A', 'B', 'C', 'D', 'E', 'F']
 valid_status_list = bad_status_list + good_status_list
 
 def need_to_drop(loan):
-  if not loan['loanStatus'] in ['Fully Paid', 'Late (31-120 days)', 'Default', 'Charged Off']:
+  if not loan['loanStatus'] in ['Current', 'Fully Paid', 'Late (31-120 days)', 'Default', 'Charged Off']:
     return True
 
   if not loan['grade'] in valid_grades:
@@ -25,10 +25,13 @@ def need_to_drop(loan):
     if loan.get('numInvestors') is None:
       return True
 
+    if loan['grade'] in ['A', 'B']:
+      return True
+
     date_str = loan['acceptD'].split('T')[0]
     issue_date = datetime.strptime(date_str, "%Y-%m-%d")
     dt = datetime.now() - issue_date
-    if dt.days < 365 and loan['loanStatus'] == 'Current':
+    if dt.days < 365 * 2 and loan['loanStatus'] == 'Current':
       return True # skip all fresh loans in the past X days
 
     #if loan['numInvestors'] != 1:
@@ -94,8 +97,8 @@ def main():
         continue
       if grade == 'B' and random.random() >= 0.706:
         continue
-    #   if grade == 'C' and random.random() >= 0.35:
-    #     continue
+      if grade == 'C' and random.random() >= 0.77:
+        continue
     #   if grade == 'D' and random.random() >= 0.6:
     #     continue
     #   if grade == 'E' and random.random() >= 0.8:

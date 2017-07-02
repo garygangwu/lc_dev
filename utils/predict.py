@@ -19,14 +19,19 @@ def load_models():
   return models
 
 
-def load_models_per_grade(grades_for_prediction):
+def load_models_per_grade(grades_for_prediction, production=False):
+  if production == True:
+    p = config.StorageProductionFile
+  else:
+    p = config.StorageFile
+
   models = {}
   for grade in grades_for_prediction:
     models[grade] = {}
-    models[grade]['extra_tree'] = joblib.load(config.StorageFile.LC_extra_tree_model + '_grade_' + grade)
-    models[grade]['random_forest'] = joblib.load(config.StorageFile.LC_random_forest_model + '_grade_' + grade)
-    models[grade]['adaptive_boosting'] = joblib.load(config.StorageFile.LC_adaptive_boosting_model + '_grade_' + grade)
-    models[grade]['gradient_boosting'] = joblib.load(config.StorageFile.LC_gradient_boosting_model + '_grade_' + grade)
+    models[grade]['extra_tree'] = joblib.load(p.LC_extra_tree_model + '_grade_' + grade)
+    models[grade]['random_forest'] = joblib.load(p.LC_random_forest_model + '_grade_' + grade)
+    models[grade]['adaptive_boosting'] = joblib.load(p.LC_adaptive_boosting_model + '_grade_' + grade)
+    models[grade]['gradient_boosting'] = joblib.load(p.LC_gradient_boosting_model + '_grade_' + grade)
   return models
 
 
