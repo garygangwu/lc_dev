@@ -20,7 +20,7 @@ bidding_grades = {
   'F' : 1
 }
 purchase_accounts = ['yimeng', 'gang']
-max_spending = 250
+max_spending = 200
 purchase_unit = 25
 
 
@@ -83,8 +83,9 @@ def purchase_loans(loans):
     if available_cash < purchase_unit:
       continue
     used_cash = 0
-    while used_cash + purchase_unit < available_cash:
-      for grade, num in bidding_grades.iteritems():
+    while used_cash + purchase_unit <= available_cash:
+      for grade in sorted(bidding_grades.keys()):
+        num = bidding_grades[grade]
         for i in xrange(num):
           if len(loans_for_purchase[grade]) == 0:
             continue
@@ -92,9 +93,9 @@ def purchase_loans(loans):
           loans_to_submit.append(loan)
           submited_loans.append(loan)
           used_cash += purchase_unit
-          if used_cash + purchase_unit >= available_cash:
+          if used_cash + purchase_unit > available_cash:
             break
-        if used_cash + purchase_unit >= available_cash:
+        if used_cash + purchase_unit > available_cash:
           break
     result = lending_club.submit_order(loans_to_submit, purchase_unit)
   save_submited_loans_to_files(submited_loans)
