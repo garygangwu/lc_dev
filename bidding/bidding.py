@@ -21,6 +21,7 @@ bidding_grades = {
 }
 purchase_accounts = ['yimeng', 'gang']
 max_spending = 200
+max_num_notes_per_grade = 3
 purchase_unit = 25
 
 
@@ -83,20 +84,27 @@ def purchase_loans(loans):
     if available_cash < purchase_unit:
       continue
     used_cash = 0
+    num_purchased_notes = defaultdict(lambda: 0)
     while used_cash + purchase_unit <= available_cash:
+      previous_used_cash = used_cash
       for grade in sorted(bidding_grades.keys()):
         num = bidding_grades[grade]
         for i in xrange(num):
+          if num_purchased_notes[grade] >= max_num_notes_per_grade:
+            continue
           if len(loans_for_purchase[grade]) == 0:
             continue
           loan = loans_for_purchase[grade].pop()
           loans_to_submit.append(loan)
+          num_purchased_notes[grade] += 1
           submited_loans.append(loan)
           used_cash += purchase_unit
           if used_cash + purchase_unit > available_cash:
             break
         if used_cash + purchase_unit > available_cash:
           break
+      if previous_used_cash >= used_cash: # meaning no more notes to purchased in the for loop
+        break
     result = lending_club.submit_order(loans_to_submit, purchase_unit)
   save_submited_loans_to_files(submited_loans)
   return submited_loans
@@ -169,7 +177,7 @@ def print_model_release_time():
   timestamp = os.path.getmtime(filename)
   d = datetime.fromtimestamp(timestamp)
   print
-  print "Model release time: %s" % str(d)
+  print "Model release time:\t%s" % str(d)
 
 
 def main(argv):
@@ -178,6 +186,8 @@ def main(argv):
   else:
     simulation()
   print_model_release_time()
+  print "Current Time: \t\t%s" % str(datetime.now())
+  print
 
 if __name__ == "__main__":
   main(sys.argv)
