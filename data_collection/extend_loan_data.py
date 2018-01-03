@@ -25,15 +25,15 @@ def main(argv):
     if loans[i].get('numInvestors') != None:
       continue
     td = today - datetime.strptime(loans[i]['acceptD'].split('T')[0], "%Y-%m-%d")
-    if td.days >= 365 and loans[i]['loanStatus'] == 'Current':
-      htmls = lending_club.get_purchased_loan_listings_in_html([ loans[i]['id'] ], session)
-      if htmls[0].find('An Error Has Occurred') > 0:
-        print "Failed to fetch loan id %d" % loans[i]['id']
-        continue
-      web_loan = scraper.fetch_loan_detail_from_html(htmls[0])
-      loans[i]['numInvestors'] = web_loan['numInvestors']
-      loans[i]['loanStatus'] = web_loan['loanStatus']
-      c += 1
+#    if td.days >= 365 and loans[i]['loanStatus'] == 'Current':
+    htmls = lending_club.get_purchased_loan_listings_in_html([ loans[i]['id'] ], session)
+    if htmls[0].find('An Error Has Occurred') > 0:
+      print "Failed to fetch loan id %d" % loans[i]['id']
+      continue
+    web_loan = scraper.fetch_loan_detail_from_html(htmls[0])
+    loans[i]['numInvestors'] = web_loan['numInvestors']
+    loans[i]['loanStatus'] = web_loan['loanStatus']
+    c += 1
     if c >= 50:
       c = 0
       now = datetime.now()

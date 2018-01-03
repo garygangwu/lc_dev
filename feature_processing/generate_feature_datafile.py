@@ -31,7 +31,7 @@ def need_to_drop(loan):
     date_str = loan['acceptD'].split('T')[0]
     issue_date = datetime.strptime(date_str, "%Y-%m-%d")
     dt = datetime.now() - issue_date
-    if dt.days < 365 * 2 and loan['loanStatus'] == 'Current':
+    if dt.days < 365*1.5 and loan['loanStatus'] == 'Current':
       return True # skip all fresh loans in the past X days
 
     #if loan['numInvestors'] != 1:
@@ -94,15 +94,15 @@ def main():
 
     if target == 1:
       if grade == 'A' and random.random() >= 0.301:
-        continue
+        key = 'testing'
       if grade == 'B' and random.random() >= 0.706:
-        continue
-      if grade == 'C' and random.random() >= 0.77:
-        continue
-    #   if grade == 'D' and random.random() >= 0.6:
-    #     continue
-    #   if grade == 'E' and random.random() >= 0.8:
-    #     continue
+        key = 'testing'
+      if grade == 'C' and random.random() >= 0.5:
+        key = 'testing'
+      if grade == 'D' and random.random() >= 0.8:
+        key = 'testing'
+      if grade == 'E' and random.random() >= 0.8:
+        key = 'testing'
 
     lc_super_data[grade][key]['data'].append(features)
     lc_super_data[grade][key]['targets'].append(target)

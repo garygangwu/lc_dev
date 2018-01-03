@@ -43,7 +43,7 @@ def print_top_features(feature_importances, feature_map):
 
 def main():
   feature_map = get_feature_mapping()
-  models = predict.load_models_per_grade(['A', 'B', 'C', 'D', 'E', 'F'])
+  models = predict.load_models_per_grade(['A', 'B', 'C', 'D', 'E', 'F'], production=True)
   for grade in sorted(models.keys()):
     print "Grade %s:" % grade
     for name, clf in models[grade].iteritems():

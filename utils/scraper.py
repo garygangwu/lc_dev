@@ -237,7 +237,7 @@ def fetch_basic_lender_profile(loan, table):
       loan['empLength'] = num_years * 12
     elif tr.text.find('Gross Income') > 0 and tr.text.find('Joint') < 0:
       raw_str = tr.td.text
-      if raw_str != 'n/a':
+      if not raw_str.startswith('n/a'):
         value = float(raw_str.split('/')[0].strip().strip('$').replace(',', ''))
       else:
         value = 0

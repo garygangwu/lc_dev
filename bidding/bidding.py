@@ -14,14 +14,12 @@ from datetime import datetime
 bidding_grades = {
   'A' : 1,
   'B' : 1,
-  'C' : 1,
-  'D' : 1,
-  'E' : 1,
-  'F' : 1
+#  'C' : 1,
+#  'D' : 1
 }
 purchase_accounts = ['yimeng', 'gang']
-max_spending = 200
-max_num_notes_per_grade = 3
+max_spending = 500
+max_num_notes_per_grade = 6
 purchase_unit = 25
 
 
@@ -33,6 +31,9 @@ def filter_bidded_loans(loans):
 
   filtered_loans = []
   for loan in loans:
+    if loan['acceptD'] is None:
+      print "Loan %s doesn't have acceptD field !!" % loan['id']
+      continue
     if not loan['id'] in bidded_loan_ids:
       filtered_loans.append(loan)
   return filtered_loans

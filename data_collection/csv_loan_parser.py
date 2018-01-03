@@ -45,8 +45,11 @@ def convert_type_default(value, to_type):
     return None
   return eval("%s(value)" % to_type)
 
+def convert_id(value):
+  return 1
+
 loan_csv_header_to_key_map = {
-  'id' : ('id', 'int'),
+  'id' : ('id', 'convert_id'),
   'member_id' : ('', 'unicode'),
   'loan_amnt' : ('loanAmount', 'float'),
   'funded_amnt' : ('', 'str'),
@@ -125,7 +128,7 @@ loan_csv_header_to_key_map = {
   'total_cu_tl' : ('totalCuTl', 'convert_int_default'),
   'inq_last_12m' : ('inqLast12m', 'convert_int_default'),
   'acc_open_past_24mths' : ('accOpenPast24Mths', 'convert_int_default'),
-  'avg_cur_bal' : ('avgCurBal', 'int'),
+  'avg_cur_bal' : ('avgCurBal', 'convert_int_default'),
   'bc_open_to_buy' : ('bcOpenToBuy', 'convert_int_default'),
   'bc_util' : ('bcUtil', 'convert_float_default'),
   'chargeoff_within_12_mths' : ('chargeoffWithin12Mths', 'int'),
@@ -173,7 +176,22 @@ loan_csv_header_to_key_map = {
   'sec_app_num_rev_accts' : ('', 'str'),
   'sec_app_chargeoff_within_12_mths' : ('', 'str'),
   'sec_app_collections_12_mths_ex_med' : ('', 'str'),
-  'sec_app_mths_since_last_major_derog' : ('', 'str')
+  'sec_app_mths_since_last_major_derog' : ('', 'str'),
+  'hardship_flag' : ('', 'str'),
+  'hardship_type' : ('', 'str'),
+  'hardship_reason' : ('', 'str'),
+  'hardship_status' : ('', 'str'),
+  'deferral_term' : ('', 'str'),
+  'hardship_amount' : ('', 'str'),
+  'hardship_start_date' : ('', 'str'),
+  'hardship_end_date' : ('', 'str'),
+  'payment_plan_start_date' : ('', 'str'),
+  'hardship_length' : ('', 'str'),
+  'hardship_dpd' : ('', 'str'),
+  'hardship_loan_status' : ('', 'str'),
+  'orig_projected_additional_accrued_interest' : ('', 'str'),
+  'hardship_payoff_balance_amount' : ('', 'str'),
+  'hardship_last_payment_amount' : ('', 'str')
 }
 
 useful_status_list = ['Current', 'Late (31-120 days)', 'Fully Paid', 'Default', 'Charged Off']
@@ -225,11 +243,12 @@ def print_loan_feature_stats(past_loans, avail_loans, keys):
 
 def main(argv):
   csv_file_source = {
-    config.StorageFile.LC_2017_Q1_LOAN_FILE : ['Late (31-120 days)', 'Default', 'Charged Off'],
-    config.StorageFile.LC_2016_Q1_LOAN_FILE : useful_status_list,
-    config.StorageFile.LC_2016_Q2_LOAN_FILE : useful_status_list,
-    config.StorageFile.LC_2016_Q3_LOAN_FILE : useful_status_list,
-    config.StorageFile.LC_2016_Q4_LOAN_FILE : ['Late (31-120 days)', 'Fully Paid', 'Default', 'Charged Off'],
+    config.StorageFile.LC_2017_Q2_LOAN_NEW_FILE : ['Late (31-120 days)', 'Default', 'Charged Off'],
+    config.StorageFile.LC_2017_Q1_LOAN_NEW_FILE : ['Late (31-120 days)', 'Default', 'Charged Off'],
+    config.StorageFile.LC_2016_Q1_LOAN_NEW_FILE : useful_status_list,
+    config.StorageFile.LC_2016_Q2_LOAN_NEW_FILE : useful_status_list,
+    config.StorageFile.LC_2016_Q3_LOAN_NEW_FILE : useful_status_list,
+    config.StorageFile.LC_2016_Q4_LOAN_NEW_FILE : ['Late (31-120 days)', 'Fully Paid', 'Default', 'Charged Off'],
     config.StorageFile.LC_2015_LOAN_FILE : useful_status_list
   }
 

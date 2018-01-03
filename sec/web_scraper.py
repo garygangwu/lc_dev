@@ -11,9 +11,9 @@ class SecStaticData:
   raw_data_file = '/Users/gary_wu/lending_club/data/loan_sec_stats.csv'
   quarter_postsup_stats = '/Users/gary_wu/lending_club/data/quarter_postsup_stats.csv'
   quarter_salessup_stats = '/Users/gary_wu/lending_club/data/quarter_salessup_stats.csv'
+  quarter_raw_sec_fold = '/Users/gary_wu/lending_club/data/sec/'
 
-
-def fetch_all_sec_424B3_filing_pages(start_date = '2017-01-01'):
+def fetch_all_sec_424B3_filing_pages(start_date = '2017-09-01'):
   loan_aggr_data = load_raw_data_from_csv_file()
   session = requests.session()
 
